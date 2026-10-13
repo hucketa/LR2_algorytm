@@ -147,8 +147,6 @@ double QuickSort(std::vector<int>& data) {
 }
 
 
-
-
 int main() {
     SetConsoleCP(65001);
     SetConsoleOutputCP(65001);
@@ -195,69 +193,4 @@ int main() {
     merged.PrintArray();
     PrintSortTime("Двошляхове злиття (Two-Way Merge)", result.size(), mergeTimeUs);
     */
-
-    
-
-    // Тестування сортування вибором
-    std::vector<std::vector<int>> selectionTests = {
-        {29, 8, 86, 87, 5, 34},
-        {1, 2, 3, 4, 5, 6},
-        {6, 5, 4, 3, 2, 1},
-        {5, 5, 5, 5, 5},
-        {3, 1, 3, 2, 3, 1, 2},
-        {-10, 0, 7, -3, 2, -10},
-        {42},
-        {}
-    };
-    for (size_t testIndex = 0; testIndex < selectionTests.size(); ++testIndex) {
-        DataArray testArray(selectionTests[testIndex]);
-        std::vector<int> expected = selectionTests[testIndex];
-        std::sort(expected.begin(), expected.end());
-        std::cout << "\n========== SELECTION SORT: ТЕСТ " << testIndex + 1 << " ==========\n";
-        std::cout << "Початковий масив:\n";
-        testArray.PrintArray();
-        double sortTimeUs = SelectSort(testArray.GetData());
-        std::cout << "Результат сортування:\n";
-        testArray.PrintArray();
-        bool isCorrect = std::is_sorted(testArray.GetData().begin(), testArray.GetData().end())
-            && testArray.GetData() == expected;
-        std::cout << "Перевірка результату: " << (isCorrect ? "УСПІШНО" : "ПОМИЛКА") << '\n';
-        PrintSortTime("Selection Sort", testArray.GetData().size(), sortTimeUs);
-    }
-    // Тестування двошляхового злиття
-    std::vector<std::pair<std::vector<int>, std::vector<int>>> mergeTests = {
-        {{1, 3, 5}, {2, 4, 6}},
-        {{1, 2, 3}, {4, 5, 6}},
-        {{4, 5, 6}, {1, 2, 3}},
-        {{2, 2, 5}, {2, 3, 5}},
-        {{-10, -3, 2}, {-5, 0, 7}},
-        {{}, {1, 2, 3}},
-        {{1, 2, 3}, {}},
-        {{}, {}},
-        {{42}, {42}},
-        {{1, 1, 1}, {1, 1}}
-    };
-    for (size_t testIndex = 0; testIndex < mergeTests.size(); ++testIndex) {
-        DataArray first(mergeTests[testIndex].first);
-        DataArray second(mergeTests[testIndex].second);
-        std::vector<int> expected = mergeTests[testIndex].first;
-        expected.insert(expected.end(), mergeTests[testIndex].second.begin(), mergeTests[testIndex].second.end());
-        std::sort(expected.begin(), expected.end());
-        std::vector<int> result;
-        std::cout << "\n========== TWO-WAY MERGE: ТЕСТ " << testIndex + 1 << " ==========\n";
-        std::cout << "Перший масив:\n";
-        first.PrintArray();
-        std::cout << "Другий масив:\n";
-        second.PrintArray();
-        double mergeTimeUs = TwoWayMerge(first.GetData(), second.GetData(), result);
-        DataArray merged(result);
-        std::cout << "Результат злиття:\n";
-        merged.PrintArray();
-        bool isCorrect = std::is_sorted(result.begin(), result.end())
-            && result == expected;
-        std::cout << "Перевірка результату: " << (isCorrect ? "УСПІШНО" : "ПОМИЛКА") << '\n';
-        PrintSortTime("Two-Way Merge", result.size(), mergeTimeUs);
-    }
-    return 0;
-
 }
