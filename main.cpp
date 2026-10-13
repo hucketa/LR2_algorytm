@@ -111,48 +111,48 @@ double TwoWayMerge(const std::vector<int>& first, const std::vector<int>& second
     return std::chrono::duration<double, std::micro>(end - start).count();
 }
 
-int Partition(std::vector<int>& data, int left, int right) {
-    int i = left - 1;
-    int j = right;
-    int pivot = data[right];
-    while (true) {
-        while (data[++i] < pivot) {
+
+int Partition(std::vector<int>& data, int leftindex, int rightindex) {
+    int pivot = data[rightindex];
+    int leftScanIndex = leftindex;
+    int rightScanIndex = rightindex - 1;
+    while (leftScanIndex <= rightScanIndex) {
+        while (leftScanIndex <= rightScanIndex &&
+               data[leftScanIndex] < pivot) {
+            ++leftScanIndex;
         }
-        while (pivot < data[--j]) {
-            if (j == left) {
-                break;
-            }
+        while (leftScanIndex <= rightScanIndex &&
+               data[rightScanIndex] > pivot) {
+            --rightScanIndex;
         }
-        if (i >= j) {
-            break;
+        if (leftScanIndex <= rightScanIndex) {
+            std::swap(data[leftScanIndex], data[rightScanIndex]);
+            ++leftScanIndex;
+            --rightScanIndex;
         }
-        std::swap(data[i], data[j]);
     }
-    std::swap(data[i], data[right]);
-    return i;
+    std::swap(data[leftScanIndex], data[rightindex]);
+    return leftScanIndex;
 }
 
-void QuickSortRecursive(std::vector<int>& data, int left, int right) {
-    if (right <= left) {
+void QuickSortRecursive(std::vector<int>& data, int leftindex, int rightindex) {
+    if (leftindex >= rightindex) {
         return;
     }
-    int pivotIndex = Partition(data, left, right);
-    QuickSortRecursive(data, left, pivotIndex - 1);
-    QuickSortRecursive(data, pivotIndex + 1, right);
+    int pivotIndex = Partition(data, leftindex, rightindex);
+    QuickSortRecursive(data, leftindex, pivotIndex - 1);
+    QuickSortRecursive(data, pivotIndex + 1, rightindex);
 }
 
-double QuickSort(std::vector<int>& data, int firstPivotIndex) {
+double QuickSort(std::vector<int>& data) {
     auto start = std::chrono::steady_clock::now();
-    if (data.size() > 1) {
-        int right = static_cast<int>(data.size()) - 1;
-        std::swap(data[firstPivotIndex], data[right]);
-        int pivotIndex = Partition(data, 0, right);
-        QuickSortRecursive(data, 0, pivotIndex - 1);
-        QuickSortRecursive(data, pivotIndex + 1, right);
+    if (!data.empty()) {
+        QuickSortRecursive(data, 0, static_cast<int>(data.size()) - 1);
     }
     auto end = std::chrono::steady_clock::now();
     return std::chrono::duration<double, std::micro>(end - start).count();
 }
+
 
 
 int main() {
@@ -212,17 +212,7 @@ int main() {
     std::cout << "\nПочатковий масив для швидкого сортування:\n";
     quickArray.PrintArray();
 
-    int firstPivotIndex = 0;
-    if (quickSize > 1) {
-        std::cout << "Введіть індекс першого опорного елемента (0-" << quickSize - 1 << "):\n";
-        std::cin >> firstPivotIndex;
-        while (firstPivotIndex < 0 || static_cast<size_t>(firstPivotIndex) >= quickSize) {
-            std::cout << "Невірний індекс. Введіть число від 0 до " << quickSize - 1 << ":\n";
-            std::cin >> firstPivotIndex;
-        }
-    }
-
-    double quickTimeUs = QuickSort(quickArray.GetData(), firstPivotIndex);
+    double quickTimeUs = QuickSort(quickArray.GetData());
     std::cout << "\nРезультат швидкого сортування:\n";
     quickArray.PrintArray();
     PrintSortTime("Швидке сортування (Quick Sort)", quickSize, quickTimeUs);
