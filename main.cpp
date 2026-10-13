@@ -111,56 +111,55 @@ double TwoWayMerge(const std::vector<int>& first, const std::vector<int>& second
     return std::chrono::duration<double, std::micro>(end - start).count();
 }
 
-// Розбиття масиву відносно опорного елемента
-int Partition(std::vector<int>& data, int left, int right, int pivotIndex) {
-    int pivot = data[pivotIndex];
-    int i = left;
+int Partition(std::vector<int>& data, int left, int right) {
+    int i = left - 1;
     int j = right;
-    while (i <= j) {
-        while (data[i] < pivot) {
-            ++i;
+    int pivot = data[right];
+    while (true) {
+        while (data[++i] < pivot) {
         }
-        while (data[j] > pivot) {
-            --j;
+        while (pivot < data[--j]) {
+            if (j == left) {
+                break;
+            }
         }
-        if (i <= j) {
-            std::swap(data[i], data[j]);
-            ++i;
-            --j;
+        if (i >= j) {
+            break;
         }
+        std::swap(data[i], data[j]);
     }
-    return j;
+    std::swap(data[i], data[right]);
+    return i;
 }
 
-// Рекурсивне сортування швидким методом
 void QuickSortRecursive(std::vector<int>& data, int left, int right) {
-    if (left >= right) {
+    if (right <= left) {
         return;
     }
-    int splitIndex = Partition(data, left, right, right);
-    QuickSortRecursive(data, left, splitIndex);
-    QuickSortRecursive(data, splitIndex + 1, right);
+    int pivotIndex = Partition(data, left, right);
+    QuickSortRecursive(data, left, pivotIndex - 1);
+    QuickSortRecursive(data, pivotIndex + 1, right);
 }
 
-// Швидке сортування з вибором першого опорного елемента
 double QuickSort(std::vector<int>& data, int firstPivotIndex) {
     auto start = std::chrono::steady_clock::now();
-    if (!data.empty()) {
+    if (data.size() > 1) {
         int right = static_cast<int>(data.size()) - 1;
-        int splitIndex = Partition(data, 0, right, firstPivotIndex);
-
-        QuickSortRecursive(data, 0, splitIndex);
-        QuickSortRecursive(data, splitIndex + 1, right);
+        std::swap(data[firstPivotIndex], data[right]);
+        int pivotIndex = Partition(data, 0, right);
+        QuickSortRecursive(data, 0, pivotIndex - 1);
+        QuickSortRecursive(data, pivotIndex + 1, right);
     }
     auto end = std::chrono::steady_clock::now();
     return std::chrono::duration<double, std::micro>(end - start).count();
 }
 
+
 int main() {
     SetConsoleCP(65001);
     SetConsoleOutputCP(65001);
     /*
-    // Сортування вибором
+          // Сортування вибором
     size_t n;
     std::cout << "Введіть кількість елементів масиву для сортування вибором:\n";
     std::cin >> n;
@@ -202,6 +201,7 @@ int main() {
     merged.PrintArray();
     PrintSortTime("Двошляхове злиття (Two-Way Merge)", result.size(), mergeTimeUs);
     */
+
     
     // Швидке сортування
     size_t quickSize;
