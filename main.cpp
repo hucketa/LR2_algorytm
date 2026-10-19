@@ -112,6 +112,7 @@ double TwoWayMerge(const std::vector<int>& first, const std::vector<int>& second
     return std::chrono::duration<double, std::micro>(end - start).count();
 }
 
+/* 
 // 1 в 1 Методичка
 int Partition(std::vector<int>& data, int leftindex, int rightindex) {
     int leftScanIndex = leftindex - 1;
@@ -143,53 +144,246 @@ double QuickSort(std::vector<int>& data) {
     }
     auto end = std::chrono::steady_clock::now();
     return std::chrono::duration<double, std::micro>(end - start).count();
+}*/
+
+//Експериментальна реалізація швидкого сортування з логуванням
+
+void LogArray(const std::vector<int>& data, int left, int right) {
+    std::cout << "[";
+    for (int i = left; i <= right; ++i) {
+        if (i > left) std::cout << " ";
+        std::cout << data[i];
+    }
+    std::cout << "]\n";
 }
+
+int PartitionExperimental(std::vector<int>& data, int leftindex, int rightindex) {
+    int leftScanIndex = leftindex - 1;
+    int rightScanIndex = rightindex;
+    int pivot = data[rightindex];
+
+    std::cout << "\nPARTITION [" << leftindex << ", " << rightindex << "]\n";
+    std::cout << "Opornyi element: " << pivot << ", index: " << rightindex << '\n';
+    std::cout << "Array before partition: ";
+    LogArray(data, leftindex, rightindex);
+
+    while (true) {
+        while (data[++leftScanIndex] < pivot) {
+            std::cout << "  Left scan: index " << leftScanIndex
+                      << ", value " << data[leftScanIndex] << " < " << pivot << '\n';
+        }
+
+        std::cout << "  Left stopped: index " << leftScanIndex
+                  << ", value " << data[leftScanIndex] << '\n';
+
+        while (pivot < data[--rightScanIndex]) {
+            std::cout << "  Right scan: index " << rightScanIndex
+                      << ", value " << data[rightScanIndex] << " > " << pivot << '\n';
+            if (rightScanIndex == leftindex) break;
+        }
+
+        std::cout << "  Right stopped: index " << rightScanIndex
+                  << ", value " << data[rightScanIndex] << '\n';
+
+        if (leftScanIndex >= rightScanIndex) {
+            std::cout << "  Pointers crossed. Stop partitioning.\n";
+            break;
+        }
+
+        std::cout << "  Swap: " << data[leftScanIndex]
+                  << " (index " << leftScanIndex << ") <-> "
+                  << data[rightScanIndex] << " (index " << rightScanIndex << ")\n";
+
+        std::swap(data[leftScanIndex], data[rightScanIndex]);
+
+        std::cout << "  Array after swap: ";
+        LogArray(data, leftindex, rightindex);
+    }
+
+    std::cout << "Place pivot " << pivot << " at index " << leftScanIndex << '\n';
+    std::swap(data[leftScanIndex], data[rightindex]);
+
+    std::cout << "Array after partition: ";
+    LogArray(data, leftindex, rightindex);
+    std::cout << "Pivot final index: " << leftScanIndex << '\n';
+
+    return leftScanIndex;
+}
+
+void QuickSortRecursiveExperimental(std::vector<int>& data, int leftindex, int rightindex, int firstPivotIndex, bool isFirst = true) {
+    if (leftindex >= rightindex) {
+        std::cout << "Range [" << leftindex << ", " << rightindex
+                  << "] - sorting not required.\n";
+        return;
+    }
+
+    std::cout << "\nQUICKSORT [" << leftindex << ", " << rightindex << "]\n";
+    std::cout << "Current array: ";
+    LogArray(data, leftindex, rightindex);
+
+    if (isFirst) {
+        std::cout << "Initial pivot selection: index " << firstPivotIndex
+                  << ", value " << data[firstPivotIndex] << '\n';
+        std::swap(data[firstPivotIndex], data[rightindex]);
+        std::cout << "After moving pivot to the end: ";
+        LogArray(data, leftindex, rightindex);
+    }
+
+    int pivotIndex = PartitionExperimental(data, leftindex, rightindex);
+
+    std::cout << "Recursive call: left part [" << leftindex
+              << ", " << pivotIndex - 1 << "]\n";
+    QuickSortRecursiveExperimental(data, leftindex, pivotIndex - 1, firstPivotIndex, false);
+
+    std::cout << "Recursive call: right part [" << pivotIndex + 1
+              << ", " << rightindex << "]\n";
+    QuickSortRecursiveExperimental(data, pivotIndex + 1, rightindex, firstPivotIndex, false);
+}
+
+double QuickSortExperimental(std::vector<int>& data, int firstPivotIndex) {
+    auto start = std::chrono::steady_clock::now();
+    if (!data.empty()) QuickSortRecursiveExperimental(data, 0, static_cast<int>(data.size()) - 1, firstPivotIndex);
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration<double, std::micro>(end - start).count();
+}
+
+//Кінець експериментальної реалізації швидкого сортування з логуванням
+
+//копія з методички
+
+int PartitionLogged(std::vector<int>& data, int leftindex, int rightindex) {
+    int leftScanIndex = leftindex - 1;
+    int rightScanIndex = rightindex;
+    int pivot = data[rightindex];
+
+    std::cout << "\nPARTITION [" << leftindex << ", " << rightindex << "]\n";
+    std::cout << "Pivot: " << pivot << " (index " << rightindex << ")\n";
+    std::cout << "Before: ";
+    LogArray(data, leftindex, rightindex);
+
+    while (true) {
+        while (data[++leftScanIndex] < pivot) {
+            std::cout << "  Left scan: index " << leftScanIndex
+                      << ", value " << data[leftScanIndex] << '\n';
+        }
+
+        std::cout << "  Left stopped: index " << leftScanIndex
+                  << ", value " << data[leftScanIndex] << '\n';
+
+        while (pivot < data[--rightScanIndex]) {
+            std::cout << "  Right scan: index " << rightScanIndex
+                      << ", value " << data[rightScanIndex] << '\n';
+            if (rightScanIndex == leftindex) break;
+        }
+
+        std::cout << "  Right stopped: index " << rightScanIndex
+                  << ", value " << data[rightScanIndex] << '\n';
+
+        if (leftScanIndex >= rightScanIndex) {
+            std::cout << "  Pointers crossed.\n";
+            break;
+        }
+
+        std::cout << "  Swap: " << data[leftScanIndex]
+                  << " <-> " << data[rightScanIndex] << '\n';
+        std::swap(data[leftScanIndex], data[rightScanIndex]);
+
+        std::cout << "  After swap: ";
+        LogArray(data, leftindex, rightindex);
+    }
+
+    std::cout << "Place pivot at index " << leftScanIndex << '\n';
+    std::swap(data[leftScanIndex], data[rightindex]);
+
+    std::cout << "After partition: ";
+    LogArray(data, leftindex, rightindex);
+
+    return leftScanIndex;
+}
+
+void QuickSortRecursiveLogged(std::vector<int>& data, int leftindex, int rightindex) {
+    if (rightindex <= leftindex) {
+        std::cout << "Range [" << leftindex << ", " << rightindex
+                  << "] - no sorting needed.\n";
+        return;
+    }
+
+    std::cout << "\nQUICKSORT [" << leftindex << ", " << rightindex << "]\n";
+    std::cout << "Current array: ";
+    LogArray(data, leftindex, rightindex);
+
+    int pivotIndex = PartitionLogged(data, leftindex, rightindex);
+
+    std::cout << "Left recursion: [" << leftindex << ", " << pivotIndex - 1 << "]\n";
+    QuickSortRecursiveLogged(data, leftindex, pivotIndex - 1);
+
+    std::cout << "Right recursion: [" << pivotIndex + 1 << ", " << rightindex << "]\n";
+    QuickSortRecursiveLogged(data, pivotIndex + 1, rightindex);
+}
+
+double QuickSortLogged(std::vector<int>& data) {
+    auto start = std::chrono::steady_clock::now();
+
+    if (!data.empty()) {
+        QuickSortRecursiveLogged(data, 0, static_cast<int>(data.size()) - 1);
+    }
+
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration<double, std::micro>(end - start).count();
+}
+
+//кінець копії з методички
 
 int main() {
     SetConsoleCP(65001);
     SetConsoleOutputCP(65001);
-    // Сортування вибором
-    size_t n;
-    std::cout << "Введіть кількість елементів масиву для сортування вибором:\n";
-    std::cin >> n;
-    DataArray selectionArray(n);
-    selectionArray.FillArray();
-    std::cout << "\nПочатковий масив для сортування вибором:\n";
-    selectionArray.PrintArray();
-    double selectionTimeUs = SelectSort(selectionArray.GetData());
-    std::cout << "\nРезультат сортування вибором:\n";
-    selectionArray.PrintArray();
-    PrintSortTime("Сортування вибором (Selection Sort)", n, selectionTimeUs);
+    /*
+        // Сортування вибором
+        size_t n;
+        std::cout << "Введіть кількість елементів масиву для сортування вибором:\n";
+        std::cin >> n;
+        DataArray selectionArray(n);
+        selectionArray.FillArray();
+        std::cout << "\nПочатковий масив для сортування вибором:\n";
+        selectionArray.PrintArray();
+        double selectionTimeUs = SelectSort(selectionArray.GetData());
+        std::cout << "\nРезультат сортування вибором:\n";
+        selectionArray.PrintArray();
+        PrintSortTime("Сортування вибором (Selection Sort)", n, selectionTimeUs);
 
-    // Двошляхове злиття
-    size_t n1;
-    size_t n2;
-    std::cout << "\nВведіть кількість елементів першого масиву для двошляхового злиття:\n";
-    std::cin >> n1;
-    std::cout << "Введіть кількість елементів другого масиву для двошляхового злиття:\n";
-    std::cin >> n2;
-    DataArray first(n1);
-    DataArray second(n2);
-    first.FillArray();
-    second.FillArray();
+        // Двошляхове злиття
+        size_t n1;
+        size_t n2;
+        std::cout << "\nВведіть кількість елементів першого масиву для двошляхового злиття:\n";
+        std::cin >> n1;
+        std::cout << "Введіть кількість елементів другого масиву для двошляхового злиття:\n";
+        std::cin >> n2;
+        DataArray first(n1);
+        DataArray second(n2);
+        first.FillArray();
+        second.FillArray();
 
-    // Сортування масивів перед злиттям
-    std::sort(first.GetData().begin(), first.GetData().end());
-    std::sort(second.GetData().begin(), second.GetData().end());
-    std::cout << "\nПерший відсортований масив:\n";
-    first.PrintArray();
-    std::cout << "\nДругий відсортований масив:\n";
-    second.PrintArray();
+        // Сортування масивів перед злиттям
+        std::sort(first.GetData().begin(), first.GetData().end());
+        std::sort(second.GetData().begin(), second.GetData().end());
+        std::cout << "\nПерший відсортований масив:\n";
+        first.PrintArray();
+        std::cout << "\nДругий відсортований масив:\n";
+        second.PrintArray();
 
-    //Двошляхове злиття
-    std::vector<int> result;
-    double mergeTimeUs = TwoWayMerge(first.GetData(), second.GetData(), result);
-    DataArray merged(result.size());
-    merged.GetData() = result;
-    std::cout << "\nРезультат двошляхового злиття:\n";
-    merged.PrintArray();
-    PrintSortTime("Двошляхове злиття (Two-Way Merge)", result.size(), mergeTimeUs);
-    size_t n1;
+        //Двошляхове злиття
+        std::vector<int> result;
+        double mergeTimeUs = TwoWayMerge(first.GetData(), second.GetData(), result);
+        DataArray merged(result.size());
+        merged.GetData() = result;
+        std::cout << "\nРезультат двошляхового злиття:\n";
+        merged.PrintArray();
+        PrintSortTime("Двошляхове злиття (Two-Way Merge)", result.size(), mergeTimeUs);
+    */
+
+    
+    
+    /*  size_t n1;
     std::cout << "\nВведіть кількість елементів першого масиву для двошляхового злиття:\n";
     std::cin >> n1;
     DataArray quickArray(n1);
@@ -207,8 +401,78 @@ int main() {
     {
         std::cout << "Помилка: індекс опорного елемента поза межами масиву!\n";
     }
-    std::cout << "\nНатисніть Enter для завершення...";
-    std::cin.ignore(INT_MAX, '\n');
-    std::cin.get();
+        */ 
+    /*
+                // Експериментальне швидке сортування
+        size_t nQuick;
+        std::cout << "\nВведіть кількість елементів масиву для Quick Sort:\n";
+        std::cin >> nQuick;
+        DataArray quickArray(nQuick);
+        quickArray.FillArray();
+        std::cout << "\nПочатковий масив:\n";
+        quickArray.PrintArray();
+
+        int firstPivotIndex = 0;
+        if (nQuick > 1) {
+            std::cout << "\nВиберіть індекс першого опорного елемента (від 0 до " << nQuick - 1 << "):\n";
+            std::cin >> firstPivotIndex;
+            if (firstPivotIndex < 0 || static_cast<size_t>(firstPivotIndex) >= nQuick) {
+                std::cout << "Помилка: неправильний індекс!\n";
+                return 1;
+            }
+        }
+
+        double quickSortTimeUs = QuickSortExperimental(quickArray.GetData(), firstPivotIndex);
+
+        std::cout << "\nВідсортований масив:\n";
+        quickArray.PrintArray();
+        std::cout << "\nАлгоритм сортування: Quick Sort (експериментальна реалізація)\n";
+        std::cout << "Кількість елементів: " << nQuick << '\n';
+        std::cout << "Час виконання: " << std::fixed << std::setprecision(3) << quickSortTimeUs << " мкс\n"; 
+        */
+        // Порівняння методичного та експериментального Quick Sort
+        size_t nQuick;
+        std::cout << "\nВведіть кількість елементів масиву для Quick Sort:\n";
+        std::cin >> nQuick;
+
+        DataArray quickArray(nQuick);
+        quickArray.FillArray();
+
+        std::cout << "\nПочатковий масив:\n";
+        quickArray.PrintArray();
+
+        int firstPivotIndex = 0;
+        if (nQuick > 1) {
+            std::cout << "\nВиберіть індекс першого опорного елемента (від 0 до "
+                    << nQuick - 1 << "):\n";
+            std::cin >> firstPivotIndex;
+
+            if (firstPivotIndex < 0 ||
+                static_cast<size_t>(firstPivotIndex) >= nQuick) {
+                std::cout << "Помилка: неправильний індекс!\n";
+                return 1;
+            }
+        }
+
+
+        std::vector<int> methodicalData = quickArray.GetData();
+        std::vector<int> experimentalData = quickArray.GetData();
+
+        std::cout << "\n========== МЕТОДИЧНИЙ QUICK SORT ==========\n";
+        double methodicalTimeUs = QuickSortLogged(methodicalData);
+
+        std::cout << "\nВідсортований масив (методичний):\n";
+        DataArray methodicalArray(methodicalData);
+        methodicalArray.PrintArray();
+        PrintSortTime("Quick Sort (методичка)", nQuick, methodicalTimeUs);
+
+        std::cout << "\n========== ЕКСПЕРИМЕНТАЛЬНИЙ QUICK SORT ==========\n";
+        double experimentalTimeUs =
+            QuickSortExperimental(experimentalData, firstPivotIndex);
+
+        std::cout << "\nВідсортований масив (експериментальний):\n";
+        DataArray experimentalArray(experimentalData);
+        experimentalArray.PrintArray();
+        PrintSortTime("Quick Sort (експериментальний)", nQuick, experimentalTimeUs);
     return 0;
 }
